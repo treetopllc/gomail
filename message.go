@@ -127,23 +127,26 @@ func (m *Message) SetAddressHeader(field, address, name string) {
 
 // FormatAddress formats an address and a name as a valid RFC 5322 address.
 func (m *Message) FormatAddress(address, name string) string {
-	enc := m.encodeString(name)
-	if enc == name {
-		m.buf.WriteByte('"')
-		for i := 0; i < len(name); i++ {
-			b := name[i]
-			if b == '\\' || b == '"' {
-				m.buf.WriteByte('\\')
+	if name != "" {
+		enc := m.encodeString(name)
+		if enc == name {
+			m.buf.WriteByte('"')
+			for i := 0; i < len(name); i++ {
+				b := name[i]
+				if b == '\\' || b == '"' {
+					m.buf.WriteByte('\\')
+				}
+				m.buf.WriteByte(b)
 			}
-			m.buf.WriteByte(b)
+			m.buf.WriteByte('"')
+		} else if hasSpecials(name) {
+			m.buf.WriteString(bEncoding.Encode(m.charset, name))
+		} else {
+			m.buf.WriteString(enc)
 		}
-		m.buf.WriteByte('"')
-	} else if hasSpecials(name) {
-		m.buf.WriteString(bEncoding.Encode(m.charset, name))
-	} else {
-		m.buf.WriteString(enc)
+		m.buf.WriteByte(' ')
 	}
-	m.buf.WriteString(" <")
+	m.buf.WriteByte('<')
 	m.buf.WriteString(address)
 	m.buf.WriteByte('>')
 

@@ -547,6 +547,20 @@ func TestEmptyHeader(t *testing.T) {
 	testMessage(t, m, 0, want)
 }
 
+func TestSetAddressHeaderEmptyName(t *testing.T) {
+	m := NewMessage()
+	m.SetAddressHeader("To", "to@example.com", "")
+	want := "<to@example.com>"
+	toHeaders := m.GetHeader("To")
+	if len(toHeaders) != 1 {
+		t.Fatalf("Invalid number of headers, got %d, want 1", len(toHeaders))
+	}
+	if toHeaders[0] != want {
+		t.Fatalf("Invalid formatted from address, got %s, want %s", toHeaders[0], want)
+	}
+
+}
+
 func testMessage(t *testing.T, m *Message, bCount int, want *message) {
 	err := Send(stubSendMail(t, bCount, want), m)
 	if err != nil {
